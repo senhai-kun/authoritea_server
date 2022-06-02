@@ -117,7 +117,7 @@ app.post("/logout", async (req, res) => {
     const { username } = req.body;
 
     try {
-        const user = await User.findOneAndUpdate({ username }, { $set: { status: false } },{ new: true });
+        const user = await User.findOneAndUpdate({ username: username }, { $set: { status: false } },{ new: true });
         
         return res.json({ success: true, msg: "User has been logged out!" });
 

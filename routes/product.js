@@ -59,11 +59,7 @@ app.post("/add_product", async (req, res) => {
     try {
         const exist = await Product.findOne({ name })
 
-        if (exist)
-            return res.json({
-                success: false,
-                message: "Product already exist!",
-            });
+        if (exist) return res.json({ success: false, message: "Product already exist!" });
 
         const result = await new Product({
             type: type,
