@@ -69,11 +69,11 @@ app.post("/add_account", async (req, res) => {
 });
 
 app.post("/edit_account", async (req, res) => {
-    const { user, username } = req.body;
+    const { user, username, password } = req.body;
 
     try {
         
-        const result = await User.findOneAndUpdate({ username: user }, { username: username }, { new: true });
+        const result = await User.findOneAndUpdate({ username: user }, { username: username, password: password }, { new: true });
 
         return res.json({ 
             success: true,
