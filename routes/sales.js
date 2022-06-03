@@ -1,4 +1,5 @@
 const app = require("express")();
+const moment = require("moment");
 const { Sales } = require("../model");
 
 app.post("/get_revenue", async (req, res) => {
@@ -21,16 +22,28 @@ app.post("/get_revenue", async (req, res) => {
             }
         }
 
-        // slice the result to get the first 7 revenue data equivalent to 7days or 1week
-        const getWeeklyRevenue = result.slice(0, 6);
+        // convert date to day
+        let day = moment(date).date();
 
-        let weeklyArray = getWeeklyRevenue.map( i => i.revenue )// transform data into array
+        let weekRange = day - 7; // date today - 1week;
         let weeklyTotalRevenue = 0;
-        weeklyArray.forEach( i => weeklyTotalRevenue += i )
+
+        if( weekRange < 6 ) {
+
+            let weeklyArray = result.map( i => i.revenue )// transform data into array
+            weeklyArray.forEach( i => weeklyTotalRevenue += i )
+
+        } else {
+            let completeWeek = result.slice(weekRange,day); // returns the 7days revenue
+
+            let weeklyArray = completeWeek.map( i => i.revenue )
+            weeklyArray.forEach( i => weeklyTotalRevenue += i )
+        }
+
 
         return res.json({ 
             today: todaysRevenue,
-            weekly: "₱"+weeklyTotalRevenue.toFixed(2), 
+            weekly: "₱"+weeklyTotalRevenue.toFixed(2)
         })
 
     } catch (e) {

@@ -32,7 +32,7 @@ mongoose.connect(process.env.MONGODB_CON, db_options)
 app.use("/account", account);
 app.use("/product", product);
 app.use("/order", order);
-app.use("/sales", sales)
+app.use("/sales", sales);
 
 app.listen(port, () => {
     console.log("Server is running...");
