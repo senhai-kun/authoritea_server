@@ -1,4 +1,5 @@
 const app = require("express")();
+const e = require("express");
 const moment = require("moment");
 const { Sales } = require("../model");
 
@@ -8,6 +9,8 @@ app.post("/get_revenue", async (req, res) => {
     try {
         const result = await Sales.find()
 
+        // DAILY
+        
         // get only the specific date
         const getRevenueDate = result.filter( i => i.date === date );
 
@@ -22,28 +25,53 @@ app.post("/get_revenue", async (req, res) => {
             }
         }
 
-        // convert date to day
-        let day = moment(date).date();
+        // WEEKLY
+        let getThisDate = moment(date).date();
+        let getHowManyDays = getThisDate % 7; // calculate on how many days will get to the week
+        let dayStart = getThisDate - getHowManyDays; // where the day will start to count
 
-        let weekRange = day - 7; // date today - 1week;
-        let weeklyTotalRevenue = 0;
+        let days = [];
+        let currentMonth = date.split(" ")[0];
+        let currentYear = date.split(" ")[2];
 
-        if( weekRange < 6 ) {
+        let weekRevenue = [];
 
-            let weeklyArray = result.map( i => i.revenue )// transform data into array
-            weeklyArray.forEach( i => weeklyTotalRevenue += i )
-
-        } else {
-            let completeWeek = result.slice(weekRange,day); // returns the 7days revenue
-
-            let weeklyArray = completeWeek.map( i => i.revenue )
-            weeklyArray.forEach( i => weeklyTotalRevenue += i )
+        if( getHowManyDays === 0  ) { 
+            dayStart = getThisDate - 7;
         }
 
+        while(getThisDate !== dayStart) {
+            days.push(`${currentMonth} ${getThisDate}, ${currentYear}`);
+            getThisDate--
+        }
+
+        days.map( day => { 
+            let weekDaysRevenue = result.find( data => data.date === day  );
+
+            if( weekDaysRevenue === undefined ) {
+                weekRevenue.push({ date: day, revenue: 0 })
+            } else {
+                weekRevenue.push(weekDaysRevenue);
+            }
+        } )
+
+        let weeklyTotalRevenue = 0;
+        let weeklyRevenue = weekRevenue.map( i => i.revenue );
+        weeklyRevenue.forEach( i => weeklyTotalRevenue += i );;
+
+        let range;
+
+        if( days.length === 1 ) {
+            range = days[0];
+        } else {
+            range = days[days.length-1] + " - " + days[0]
+        }
+
+        let week = { weekly: "₱"+weeklyTotalRevenue.toFixed(2), range }
 
         return res.json({ 
             today: todaysRevenue,
-            weekly: "₱"+weeklyTotalRevenue.toFixed(2)
+            week: week,
         })
 
     } catch (e) {
