@@ -32,16 +32,6 @@ app.get("/get_milktea", async (req, res) => {
     }
 } )
 
-app.get("/get_coffee", async (req, res) => {
-    try {
-        const coffee = await Product.find({ type: "coffee" });
-
-        return res.json(coffee)
-    } catch (e) {
-        return res.status(500).json({ error: `Something went wrong error: ${e}` });
-    }
-} )
-
 app.get("/get_snack", async (req, res) => {
     try {
         const snack = await Product.find({ type: "snack" });
@@ -54,14 +44,28 @@ app.get("/get_snack", async (req, res) => {
 
 
 app.post("/add_product", async (req, res) => {
-    const { name, description, stock, price, type, bestSeller } = req.body;
+    const { name, description, ingredients, stock, price, type, bestSeller } = req.body;
 
     try {
         const exist = await Product.findOne({ name })
 
         if (exist) return res.json({ success: false, message: "Product already exist!" });
 
-        const result = await new Product({
+        let prod = type === "milktea" ? 
+        {
+            type: type,
+            name: name,
+            description: description,
+            ingredients: ingredients,
+            price: { 
+                medium: price.medium === '' ? 0 : price.medium,
+                large: price.large === '' ? 0 : price.large
+            },
+            stock: stock,
+            bestSeller: bestSeller
+        }
+        : 
+        {
             type: type,
             name: name,
             description: description,
@@ -71,7 +75,9 @@ app.post("/add_product", async (req, res) => {
             },
             stock: stock,
             bestSeller: bestSeller
-        }).save()
+        } ;
+
+        const result = await new Product(prod).save()
 
         return res.json({
             success: true,
@@ -86,17 +92,36 @@ app.post("/add_product", async (req, res) => {
 })
 
 app.post("/edit_product", async (req, res) => {
-    const { product, name, description, stock, price, type, bestSeller } = req.body;
+    const { product, name, description, ingredients, stock, price, type, bestSeller } = req.body;
 
     try {
-        const update = await Product.findOneAndUpdate({ name: product }, {
-            name: name,
+        let prod = type === "milktea" ? 
+        {
             type: type,
+            name: name,
             description: description,
+            ingredients: ingredients,
+            price: { 
+                medium: price.medium === '' ? 0 : price.medium,
+                large: price.large === '' ? 0 : price.large
+            },
             stock: stock,
-            price: price,
             bestSeller: bestSeller
-        } , { new: true })
+        }
+        : 
+        {
+            type: type,
+            name: name,
+            description: description,
+            price: { 
+                medium: price.medium === '' ? 0 : price.medium,
+                large: price.large === '' ? 0 : price.large
+            },
+            stock: stock,
+            bestSeller: bestSeller
+        } ;
+
+        const update = await Product.findOneAndUpdate({ name: product }, { $set: prod } , { new: true })
 
         return res.json({
             success: true,

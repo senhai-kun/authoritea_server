@@ -4,6 +4,7 @@ const port = process.env.PORT || 5000;
 const cors = require("cors");
 const mongoose = require("mongoose");
 const account = require("./routes/account");
+const mainIngredients = require("./routes/mainIngredients");
 const product = require("./routes/product");
 const order = require("./routes/order");
 const sales = require("./routes/sales");
@@ -30,6 +31,7 @@ mongoose.connect(process.env.MONGODB_CON, db_options)
     });
 
 app.use("/account", account);
+app.use("/main", mainIngredients);
 app.use("/product", product);
 app.use("/order", order);
 app.use("/sales", sales);
